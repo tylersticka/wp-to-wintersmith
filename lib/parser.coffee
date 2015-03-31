@@ -5,7 +5,7 @@ Parser = ->
 
 Parser.prototype.parse = (post) ->
   parsed =
-    title: post.title[0].replace(':', '')
+    title: post.title[0]#.replace(':', '')
     filename: post["wp:post_name"]
     date: new Date(post.pubDate).toUTCString()
     content: to_markdown post['content:encoded'][0]
