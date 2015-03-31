@@ -1,6 +1,7 @@
 fs = require 'fs'
 mkdirp = require 'mkdirp'
 mustache = require 'mustache'
+moment = require 'moment'
 
 mode = 0o0775
 
@@ -13,11 +14,13 @@ Writer.prototype.write_authors = (authors) ->
 
 Writer.prototype.write_content = (obj) ->
   template = fs.readFileSync('./lib/templates/article.mustache').toString()
+  post_folder = "./contents/articles"
+  mkdirp.sync(post_folder, mode)
   for post in obj.posts
     post.author = obj.globals.authors[0].shortname
-    post_folder = "./contents/articles/#{post.filename}"
-    mkdirp.sync(post_folder, mode)
+    post.date = moment(new Date(post.date)).utc().format("YYYY-MM-DD")
+    post_filename = post.date + '-' + post.filename;
     post = mustache.render template, post
-    fs.writeFileSync "#{post_folder}/index.md", post
+    fs.writeFileSync "#{post_folder}/#{post_filename}.md", post
 
 module.exports = new Writer()
