@@ -1,4 +1,5 @@
 fs = require 'fs'
+path = require 'path'
 mkdirp = require 'mkdirp'
 mustache = require 'mustache'
 moment = require 'moment'
@@ -20,6 +21,17 @@ Writer.prototype.write_content = (obj) ->
     post_filename = post.filename;
     post_folder = "./contents/articles/#{post_filename}"
     mkdirp.sync(post_folder, mode)
+
+    # transitioning uploads
+    post.uploads.forEach (url) ->
+      # copy file relative to post
+      base_name = path.basename url.relative
+      local_file = fs.readFileSync "./uploads#{url.relative}"
+      fs.writeFileSync "#{post_folder}/#{base_name}", local_file
+      # replace occurrences with relative link instead
+      search_regex = new RegExp url.original, 'g'
+      post.content = post.content.replace search_regex, base_name
+
     post = mustache.render template, post
     fs.writeFileSync "#{post_folder}/index.md", post
 

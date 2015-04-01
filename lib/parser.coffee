@@ -1,14 +1,24 @@
 to_markdown = require('to-markdown').toMarkdown
+urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig
+urlSplit = "wp-content/uploads"
 
 Parser = ->
   return this
 
 Parser.prototype.parse = (post) ->
+  post_content = to_markdown post['content:encoded'][0]
+  post_uploads = []
+  (post_content.match(urlRegex) or []).forEach (match) ->
+    if match.indexOf(urlSplit) isnt -1
+      post_uploads.push
+        original: match
+        relative: match.split(urlSplit)[1]
   parsed =
     title: post.title[0]#.replace(':', '')
     filename: post["wp:post_name"]
     date: new Date(post.pubDate).toUTCString()
-    content: to_markdown post['content:encoded'][0]
+    content: post_content
+    uploads: post_uploads
 
 Parser.prototype.globals = (input) ->
   obj = input.rss
