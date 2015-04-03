@@ -2,7 +2,7 @@ fs = require 'fs'
 path = require 'path'
 mkdirp = require 'mkdirp'
 mustache = require 'mustache'
-moment = require 'moment'
+# moment = require 'moment'
 
 mode = 0o0775
 
@@ -17,13 +17,11 @@ Writer.prototype.write_content = (obj) ->
   mkdirp.sync './contents/images/content/old', mode
   template = fs.readFileSync('./lib/templates/article.mustache').toString()
   for post in obj.posts
-    post_moment = moment(new Date(post.date)).utc()
-    post_year = post_moment.format("YYYY")
+    # post_moment = moment(new Date(post.date)).utc()
+    post_year = post.date.split('-')[0]#post_moment.format("YYYY")
     post_filename = post.filename;
     post_folder = "./contents/articles/#{post_year}"
-
     post.author = obj.globals.authors[0].shortname
-    post.date = post_moment.format("YYYY-MM-DD")
 
     # transitioning uploads
     post.uploads.forEach (url) ->

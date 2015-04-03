@@ -1,7 +1,10 @@
 ---
-title: "{{title}}"
-date: {{date}}
+title: '{{title}}'
+date: '{{date}}'
 template: old.hbs
+{{#comments}}
+{{{YAML}}}
+{{/comments}}
 ---
 
 {{{content}}}

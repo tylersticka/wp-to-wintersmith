@@ -1,4 +1,6 @@
 to_markdown = require('to-markdown').toMarkdown
+moment = require 'moment'
+YAML = require 'yamljs'
 urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig
 urlSplit = "wp-content/uploads"
 
@@ -13,12 +15,27 @@ Parser.prototype.parse = (post) ->
       post_uploads.push
         original: match
         relative: match.split(urlSplit)[1]
+  post_comments = []
+  if post["wp:comment"]
+    for comment in post["wp:comment"] when comment["wp:comment_approved"][0] is '1'
+      post_comment =
+        id: parseInt comment["wp:comment_id"][0], 10
+        author: comment["wp:comment_author"][0]
+        date: moment(new Date(comment["wp:comment_date"][0])).utc().format("YYYY-MM-DD HH:mm")
+        contents: comment["wp:comment_content"][0]
+      if comment["wp:comment_author_url"] then post_comment.url = comment["wp:comment_author_url"][0]
+      post_comments.push post_comment
   parsed =
     title: post.title[0]#.replace(':', '')
     filename: post["wp:post_name"]
-    date: new Date(post.pubDate).toUTCString()
+    # date: new Date(post.pubDate).toUTCString()
+    date: moment(new Date(post.pubDate)).utc().format("YYYY-MM-DD")
     content: post_content
     uploads: post_uploads
+  if post_comments.length
+    parsed.comments =
+      YAML: YAML.stringify { comments: post_comments }, 4, 2
+  return parsed
 
 Parser.prototype.globals = (input) ->
   obj = input.rss
@@ -36,7 +53,11 @@ Parser.prototype.globals = (input) ->
 
 Parser.prototype.posts = (input) ->
   posts = []
-  posts.push post for post in input.rss.channel[0].item
+  for post in input.rss.channel[0].item
+    if post['wp:post_type'][0] is 'post' and post['wp:status'][0] is 'publish'
+      posts.push post
+    # console.log post['wp:post_type'][0]
+  # posts.push post for post in input.rss.channel[0].item when input.rss.channel[0].item['wp::post_type'][0] is 'post'
   return posts
 
 Parser.prototype.wrapper = (input) ->
