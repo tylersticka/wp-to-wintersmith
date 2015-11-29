@@ -21,15 +21,14 @@ Parser.prototype.parse = (post) ->
       post_comment =
         id: parseInt comment["wp:comment_id"][0], 10
         author: comment["wp:comment_author"][0]
-        date: moment(new Date(comment["wp:comment_date"][0])).utc().format("YYYY-MM-DD HH:mm")
+        date: moment.utc(comment["wp:comment_date"][0] + '-08:00').format("YYYY-MM-DDTHH:mm:ssZ")
         contents: comment["wp:comment_content"][0]
       if comment["wp:comment_author_url"] then post_comment.url = comment["wp:comment_author_url"][0]
       post_comments.push post_comment
   parsed =
     title: post.title[0]#.replace(':', '')
     filename: post["wp:post_name"]
-    # date: new Date(post.pubDate).toUTCString()
-    date: moment(new Date(post.pubDate)).utc().format("YYYY-MM-DD")
+    date: moment.utc(post.pubDate, "ddd, D MMM YYYY HH:mm:ss ZZ").format("YYYY-MM-DDTHH:mm:ssZ")
     content: post_content
     uploads: post_uploads
   if post_comments.length
