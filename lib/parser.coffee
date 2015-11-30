@@ -1,20 +1,24 @@
-to_markdown = require('to-markdown').toMarkdown
+# to_markdown = require('to-markdown').toMarkdown
 moment = require 'moment'
 YAML = require 'yamljs'
-urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig
+urlRegex = ///
+	((http://tylersticka.com)?/wp-content/uploads/[^"'\]\)]+)
+///g
 urlSplit = "wp-content/uploads"
 
 Parser = ->
   return this
 
 Parser.prototype.parse = (post) ->
-  post_content = to_markdown post['content:encoded'][0]
+#   post_content = to_markdown post['content:encoded'][0]
+  post_content = post['content:encoded'][0]
+  post_upload_matches = []
   post_uploads = []
   (post_content.match(urlRegex) or []).forEach (match) ->
     if match.indexOf(urlSplit) isnt -1
       post_uploads.push
-        original: match
-        relative: match.split(urlSplit)[1]
+        original: match.trim()
+        relative: match.split(urlSplit).pop().trim()
   post_comments = []
   if post["wp:comment"]
     for comment in post["wp:comment"] when comment["wp:comment_approved"][0] is '1'
